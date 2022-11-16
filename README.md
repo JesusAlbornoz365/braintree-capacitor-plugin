@@ -13,24 +13,46 @@ npx cap sync
 
 <docgen-index>
 
-* [`echo(...)`](#echo)
+* [`initialize(...)`](#initialize)
+* [`launch()`](#launch)
+* [`getLastPaymentMethod()`](#getlastpaymentmethod)
 
 </docgen-index>
 
 <docgen-api>
 <!--Update the source file JSDoc comments and rerun docgen to update the docs below-->
 
-### echo(...)
+### initialize(...)
 
 ```typescript
-echo(options: { value: string; }) => Promise<{ value: string; }>
+initialize(options: { authorizationKey: string; isThreeDSecureEnabled?: "true" | "false"; shouldCollectDeviceData?: "true" | "false"; isSaveCardCheckBoxVisible?: "true" | "false"; defaultVaultSetting?: "true" | "false"; isVaultManagerEnabled?: "true" | "false"; nameStatus?: "Disabled" | "Required" | "Optional"; disableApplePay?: boolean; disableGooglePay?: boolean; }) => Promise<void>
 ```
 
-| Param         | Type                            |
-| ------------- | ------------------------------- |
-| **`options`** | <code>{ value: string; }</code> |
+| Param         | Type                                                                                                                                                                                                                                                                                                                                                                              |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`options`** | <code>{ authorizationKey: string; isThreeDSecureEnabled?: 'true' \| 'false'; shouldCollectDeviceData?: 'true' \| 'false'; isSaveCardCheckBoxVisible?: 'true' \| 'false'; defaultVaultSetting?: 'true' \| 'false'; isVaultManagerEnabled?: 'true' \| 'false'; nameStatus?: 'Disabled' \| 'Required' \| 'Optional'; disableApplePay?: boolean; disableGooglePay?: boolean; }</code> |
 
-**Returns:** <code>Promise&lt;{ value: string; }&gt;</code>
+--------------------
+
+
+### launch()
+
+```typescript
+launch() => Promise<any>
+```
+
+**Returns:** <code>Promise&lt;any&gt;</code>
+
+--------------------
+
+
+### getLastPaymentMethod()
+
+```typescript
+getLastPaymentMethod() => Promise<any>
+```
+
+**Returns:** <code>Promise&lt;any&gt;</code>
 
 --------------------
 

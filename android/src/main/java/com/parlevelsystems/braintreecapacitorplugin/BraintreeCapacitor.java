@@ -2,10 +2,17 @@ package com.parlevelsystems.braintreecapacitorplugin;
 
 import android.util.Log;
 
+import com.getcapacitor.PluginCall;
+
 public class BraintreeCapacitor {
 
-    public String echo(String value) {
-        Log.i("Echo", value);
-        return value;
+    private PluginCall call;
+
+    public void setCall(PluginCall call) {
+        this.call = call;
+    }
+
+    public PluginCall getCall() {
+        return call;
     }
 }

@@ -6,8 +6,15 @@ export class BraintreeCapacitorWeb
   extends WebPlugin
   implements BraintreeCapacitorPlugin
 {
-  async echo(options: { value: string }): Promise<{ value: string }> {
-    console.log('ECHO', options);
-    return options;
+  async initialize(options: { authorizationKey: string; isThreeDSecureEnabled?: 'true' | 'false' | undefined; shouldCollectDeviceData?: 'true' | 'false' | undefined; isSaveCardCheckBoxVisible?: 'true' | 'false' | undefined; defaultVaultSetting?: 'true' | 'false' | undefined; isVaultManagerEnabled?: 'true' | 'false' | undefined; nameStatus?: 'Disabled' | 'Required' | 'Optional' | undefined; disableApplePay?: boolean | undefined; disableGooglePay?: boolean | undefined; }): Promise<void> {
+    console.log("INITIALIZE", options);
+  }
+
+  async launch(): Promise<any> {
+      return "";
+  }
+
+  async getLastPaymentMethod(): Promise<any> {
+      return "";
   }
 }
