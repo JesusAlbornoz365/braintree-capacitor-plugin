@@ -1,27 +1,21 @@
 package com.parlevelsystems.braintreecapacitorplugin;
+import android.content.Intent;
 
-import androidx.annotation.NonNull;
-
+import androidx.activity.result.ActivityResult;
 import com.braintreepayments.api.DropInClient;
-import com.braintreepayments.api.DropInListener;
-import com.braintreepayments.api.DropInPaymentMethod;
 import com.braintreepayments.api.DropInRequest;
-import com.braintreepayments.api.DropInResult;
-import com.braintreepayments.api.InvalidArgumentException;
-import com.braintreepayments.api.UserCanceledException;
-import com.braintreepayments.cardform.view.CardForm;
-import com.braintreepayments.api.PaymentMethodNonce;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
+import com.getcapacitor.annotation.ActivityCallback;
 import com.getcapacitor.annotation.CapacitorPlugin;
 
 
+@CapacitorPlugin(name = "BraintreeCapacitor", requestCodes={BraintreeCapacitorPlugin.DROP_IN_REQUEST})
+public class BraintreeCapacitorPlugin extends Plugin {
 
-@CapacitorPlugin(name = "BraintreeCapacitor")
-public class BraintreeCapacitorPlugin extends Plugin implements DropInListener {
-
+    static final int DROP_IN_REQUEST = 1;
     private BraintreeCapacitor implementation = new BraintreeCapacitor();
 
     private DropInClient dropInClient;
@@ -33,9 +27,10 @@ public class BraintreeCapacitorPlugin extends Plugin implements DropInListener {
     private boolean defaultVaultSetting = false;
     private boolean isVaultManagerEnabled = false;
     private String nameStatus = "Disabled"; // "Optional", "Required"
+    private DropInRequest dropInRequest;
 
     @PluginMethod()
-    public void initialize(PluginCall call) throws InvalidArgumentException {
+    public void initialize(PluginCall call) {
         mAuthorization = call.getString("authorizationKey", "");
         isThreeDSecureEnabled = call
                 .getString("isThreeDSecureEnabled", "false").compareTo("true") == 0;
@@ -50,10 +45,15 @@ public class BraintreeCapacitorPlugin extends Plugin implements DropInListener {
         nameStatus = call
                 .getString("nameStatus", "Disabled");
 
-        dropInClient = new DropInClient(getActivity(), mAuthorization);
-        dropInClient.setListener(this);
-        call.resolve();
+        if (mAuthorization == null || mAuthorization.isEmpty()) {
+            call.reject("Client token was not provided or was invalid,"
+                    + " please ensure you are running the 'initialize' method"
+                    + " before using this plugin");
+            return;
+        }
 
+
+        call.resolve();
     }
 
     @PluginMethod()
@@ -65,106 +65,40 @@ public class BraintreeCapacitorPlugin extends Plugin implements DropInListener {
             return;
         }
 
-        DropInRequest dropInRequest = new DropInRequest();
-        // client Token
-        // requestThreeDSecure
-        // CollectDeviceData
-        //Google payment request
-        dropInRequest.setMaskSecurityCode(true);
-        dropInRequest.setMaskCardNumber(true);
-        dropInRequest.setAllowVaultCardOverride(isSaveCardCheckBoxVisible);
-        dropInRequest.setVaultCardDefaultValue(defaultVaultSetting);
-        dropInRequest.setVaultManagerEnabled(isVaultManagerEnabled);
-        dropInRequest.setCardholderNameStatus(getCardholderNameStatus(nameStatus));
+        Intent intent = new Intent(
+            getActivity().getApplicationContext(),
+            BraintreeDropinActivity.class
+        );
 
-        implementation.setCall(call);
+        intent.putExtra("authorization", mAuthorization);
+        intent.putExtra("isThreeDSecureEnabled", isThreeDSecureEnabled == true ? "true": "false");
+        intent.putExtra("isSaveCardCheckBoxVisible", isSaveCardCheckBoxVisible == true ? "true": "false");
+        intent.putExtra("defaultVaultSetting", defaultVaultSetting == true ? "true": "false");
+        intent.putExtra("isVaultManagerEnabled", isVaultManagerEnabled == true ? "true": "false");
+        intent.putExtra("nameStatus", nameStatus);
 
-        dropInClient.launchDropIn(dropInRequest);
+        startActivityForResult(call, intent, "checkoutResult");
+
     }
 
     @PluginMethod()
     public void getLastPaymentMethod(final PluginCall call) {
-
-        dropInClient.fetchMostRecentPaymentMethod(getActivity(), (dropInResult, error) -> {
-            if (error != null) {
-                call.reject(error.getMessage());
-                return;
-            } else if (dropInResult != null) {
-                if (dropInResult.getPaymentMethodType() != null) {
-                    DropInPaymentMethod paymentMethodType = dropInResult.getPaymentMethodType();
-                    // use the icon and name to show in your UI
-                    int icon = paymentMethodType.getDrawable();
-                    int name = paymentMethodType.getLocalizedName();
-
-
-                    if (paymentMethodType == DropInPaymentMethod.GOOGLE_PAY) {
-                        // The last payment method the user used was Google Pay.
-                        // The Google Pay flow will need to be performed by the
-                        // user again at the time of checkout.
-                    } else {
-                        // Use the payment method show in your UI and charge the user
-                        // at the time of checkout.
-                        PaymentMethodNonce paymentMethod = dropInResult.getPaymentMethodNonce();
-                        final JSObject response = new JSObject();
-                        response.put("nonceData", paymentMethod.toString());
-                        response.put("deviceData", dropInResult.getDeviceData());
-                        response.put("paymentMethodType", paymentMethodType.name());
-                        response.put("paymentDescription", dropInResult.getPaymentDescription());
-                        call.resolve(response);
-                        return;
-                    }
-                } else {
-                    // there was no existing payment method
-                    final JSObject response = new JSObject();
-                    response.put("nonceData", "");
-                    call.resolve(response);
-                    return;
-                }
-            }
-        });
-
+        call.reject("No possible to get elements");
+        return;
+        
     }
 
-
-    @Override
-    public void onDropInSuccess(@NonNull DropInResult dropInResult) {
-        String paymentMethodNonce = dropInResult.getPaymentMethodNonce().toString();
-        var call = implementation.getCall();
-
-        if (call != null) {
-            final JSObject response = new JSObject();
-            response.put("nonceData", paymentMethodNonce);
+    @ActivityCallback
+    private void checkoutResult(PluginCall call, ActivityResult result) {
+        Intent intent = result.getData();
+        String json = intent.getStringExtra("result");
+        try {
+            JSObject response = new JSObject(json);
             call.resolve(response);
+        } catch (Exception e) {
+            call.reject(e.getMessage(), e);
         }
     }
 
-    @Override
-    public void onDropInFailure(@NonNull Exception error) {
-        var call = implementation.getCall();
-        if (call != null) {
-            if (error instanceof UserCanceledException) {
-                // the user canceled
-                final JSObject response = new JSObject();
-                response.put("status", "cancelled");
-                call.resolve(response);
-            } else {
-                // handle error
-                call.reject(error.getMessage());
-            }
-        }
-
-    }
-
-    public static int getCardholderNameStatus(String status) {
-        switch (status) {
-            case "Optional":
-                return CardForm.FIELD_OPTIONAL;
-            case "Required":
-                return CardForm.FIELD_REQUIRED;
-            case "Disabled":
-            default:
-                return CardForm.FIELD_DISABLED;
-        }
-    }
 
 }
