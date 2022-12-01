@@ -115,48 +115,6 @@ public class BraintreeDropinActivity extends AppCompatActivity implements DropIn
         }
     }
 
-    private String getLastPayment() {
-        String result = "";
-        dropInClient.fetchMostRecentPaymentMethod(this, (dropInResult, error) -> {
-            if (error != null) {
-                return;
-            } else if (dropInResult != null) {
-                if (dropInResult.getPaymentMethodType() != null) {
-                    DropInPaymentMethod paymentMethodType = dropInResult.getPaymentMethodType();
-                    // use the icon and name to show in your UI
-                    int icon = paymentMethodType.getDrawable();
-                    int name = paymentMethodType.getLocalizedName();
-
-
-                    if (paymentMethodType == DropInPaymentMethod.GOOGLE_PAY) {
-                        // The last payment method the user used was Google Pay.
-                        // The Google Pay flow will need to be performed by the
-                        // user again at the time of checkout.
-                    } else {
-                        // Use the payment method show in your UI and charge the user
-                        // at the time of checkout.
-                        PaymentMethodNonce paymentMethod = dropInResult.getPaymentMethodNonce();
-                        final JSObject response = new JSObject();
-                        response.put("nonceData", paymentMethod.toString());
-                        response.put("deviceData", dropInResult.getDeviceData());
-                        response.put("paymentMethodType", paymentMethodType.name());
-                        response.put("paymentDescription", dropInResult.getPaymentDescription());
-                        this.lastResult = response.toString();
-                        return;
-                    }
-                } else {
-                    // there was no existing payment method
-                    final JSObject response = new JSObject();
-                    response.put("nonceData", "");
-                    this.lastResult = response.toString();
-                    return;
-                }
-            }
-        });
-
-        return result;
-    }
-
     protected JSObject createNonceJSObject(PaymentMethodNonce nonce) {
         JSObject jsNonce = new JSObject();
         jsNonce.put("nonce", nonce.getString());

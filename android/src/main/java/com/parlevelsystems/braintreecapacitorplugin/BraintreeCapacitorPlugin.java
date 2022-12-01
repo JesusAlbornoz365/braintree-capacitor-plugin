@@ -83,9 +83,21 @@ public class BraintreeCapacitorPlugin extends Plugin {
 
     @PluginMethod()
     public void getLastPaymentMethod(final PluginCall call) {
-        call.reject("No possible to get elements");
-        return;
-        
+        if (mAuthorization == null || mAuthorization.isEmpty()) {
+            call.reject("Client token was not provided or was invalid,"
+                    + " please ensure you are running the 'initialize' method"
+                    + " before using this plugin");
+            return;
+        }
+
+        Intent intent = new Intent(
+                getActivity().getApplicationContext(),
+                BraintreeLastPaymentsActivity.class
+        );
+
+        intent.putExtra("authorization", mAuthorization);
+
+        startActivityForResult(call, intent, "checkoutResult");
     }
 
     @ActivityCallback
