@@ -17,10 +17,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/JesusAlbornoz/braintree-capacitor-plugin.git"
+    "url": "git+https://github.com/JesusAlbornoz365/braintree-capacitor-plugin.git"
   },
   "bugs": {
-    "url": "https://github.com/JesusAlbornoz/braintree-capacitor-plugin/issues"
+    "url": "https://github.com/JesusAlbornoz365/braintree-capacitor-plugin/issues"
   },
   "keywords": [
     "capacitor",
